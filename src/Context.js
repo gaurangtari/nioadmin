@@ -4,7 +4,7 @@ import Peer from "simple-peer";
 
 const SocketContext = createContext();
 // const socket = io("http://172.26.27.246:9090");
-const socket = io('https://nio-server.vercel.app/');
+const socket = io('https://nio-server.onrender.com');
 // const socket = io("http://localhost:9090");
 
 
