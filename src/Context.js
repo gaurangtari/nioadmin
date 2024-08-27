@@ -1,12 +1,16 @@
 import React, { createContext, useState, useRef, useEffect } from "react";
 import { io } from "socket.io-client";
 import Peer from "simple-peer";
+import axios from "axios";
 
 const SocketContext = createContext();
-// const socket = io("http://172.26.27.246:9090");
-const socket = io('https://nio-server.onrender.com');
-// const socket = io("http://localhost:9090");
+//URLs
+const localhost = "http://localhost:9090";
+const hostedServer = "https://nio-server.onrender.com";
+const localNetwork = "";
 
+//SOCKET INITIALISATION
+const socket = io(localhost);
 
 const ContextProvider = ({ children }) => {
   const [callAccepted, setCallAccepted] = useState(false);
@@ -20,20 +24,43 @@ const ContextProvider = ({ children }) => {
   const userVideo = useRef();
   const connectionRef = useRef();
 
+  const sendAdminIdToRedis = async (id) => {
+    try {
+      await axios.post(`${localhost}/admin-id`, { id });
+    } catch (error) {
+      console.log(error);
+      console.error("Error sending data to Redis:", error);
+    }
+  };
+
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((currentStream) => {
         setStream(currentStream);
-
         myVideo.current.srcObject = currentStream;
       });
 
-    socket.on("me", (id) => setMe(id));
+    socket.on("me", (id) => {
+      socket.emit("join-room", id);
+      setMe(id);
+      sendAdminIdToRedis(id);
+    });
 
     socket.on("callUser", ({ from, name: callerName, signal }) => {
       setCall({ isReceivingCall: true, from, name: callerName, signal });
     });
+  }, []);
+
+  useEffect(() => {
+    const unloadCallback = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+      return "";
+    };
+
+    window.addEventListener("beforeunload", unloadCallback);
+    return () => window.removeEventListener("beforeunload", unloadCallback);
   }, []);
 
   const answerCall = () => {

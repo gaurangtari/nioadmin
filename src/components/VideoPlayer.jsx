@@ -1,24 +1,23 @@
 import React, { useContext } from "react";
 import { Grid, Paper, makeStyles } from "@material-ui/core";
+// import Card from "@m";
 
 import { SocketContext } from "../Context";
+import Sidebar from "./Sidebar";
 
 const useStyles = makeStyles((theme) => ({
   video: {
-    width: "550px",
+    // width: "800px",
     [theme.breakpoints.down("xs")]: {
-      width: "300px",
+      width: "100%",
     },
   },
   gridContainer: {
     justifyContent: "center",
-    [theme.breakpoints.down("xs")]: {
-      flexDirection: "column",
-    },
+    padding: "20px",
+    [theme.breakpoints.down("xs")]: {},
   },
   paper: {
-    padding: "10px",
-    border: "2px solid black",
     margin: "10px",
   },
 }));
@@ -29,26 +28,37 @@ const VideoPlayer = () => {
 
   return (
     <Grid container className={classes.gridContainer}>
-      {stream && (
-        <Paper className={classes.paper}>
-          <Grid item xs={12} md={6}>
-            {/* <Typography variant="h5" gutterBottom>{name || 'Name'}</Typography> */}
-            <video muted ref={myVideo} autoPlay className={classes.video} />
-          </Grid>
-        </Paper>
-      )}
-      {/* {callAccepted && !callEnded && (
+      {stream ? (
         <Paper className={classes.paper}>
           <Grid item xs={12} md={6}>
             <video
               playsInline
-              ref={userVideo}
+              muted
+              ref={myVideo}
               autoPlay
               className={classes.video}
             />
           </Grid>
         </Paper>
-      )} */}
+      ) : (
+        <Paper className={classes.paper}>
+          <Grid item xs={12} md={6}>
+            <video
+              playsInline
+              muted
+              ref={null}
+              autoPlay
+              className={classes.video}
+            />
+          </Grid>
+        </Paper>
+      )}
+
+      <Grid item xs={6} md={6}>
+        <Paper>
+          <h1>telemetry data</h1>
+        </Paper>
+      </Grid>
     </Grid>
   );
 };
