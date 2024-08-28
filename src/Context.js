@@ -10,7 +10,7 @@ const hostedServer = "https://nio-server.onrender.com";
 const localNetwork = "";
 
 //SOCKET INITIALISATION
-const socket = io(localhost);
+const socket = io(hostedServer);
 
 const ContextProvider = ({ children }) => {
   const [callAccepted, setCallAccepted] = useState(false);
@@ -26,7 +26,7 @@ const ContextProvider = ({ children }) => {
 
   const sendAdminIdToRedis = async (id) => {
     try {
-      await axios.post(`${localhost}/admin-id`, { id });
+      await axios.post(`${hostedServer}/admin-id`, { id });
     } catch (error) {
       console.log(error);
       console.error("Error sending data to Redis:", error);
