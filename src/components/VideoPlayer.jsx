@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Grid, Paper, makeStyles } from "@material-ui/core";
+import { Grid, Paper, makeStyles, Typography } from "@material-ui/core";
 // import Card from "@m";
 
 import { SocketContext } from "../Context";
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const VideoPlayer = () => {
-  const { myVideo, stream } = useContext(SocketContext);
+  const { myVideo, stream, vehicleState } = useContext(SocketContext);
   const classes = useStyles();
 
   return (
@@ -54,11 +54,7 @@ const VideoPlayer = () => {
         </Paper>
       )}
 
-      <Grid item xs={6} md={6}>
-        <Paper>
-          <h1>telemetry data</h1>
-        </Paper>
-      </Grid>
+      
     </Grid>
   );
 };

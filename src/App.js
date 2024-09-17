@@ -5,6 +5,7 @@ import VideoPlayer from "./components/VideoPlayer";
 import Sidebar from "./components/Sidebar";
 import Notifications from "./components/Notifications";
 import ResponsiveAppBar from "./components/ResponsiveAppBar";
+import VehicleState from "./components/VehicleState";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -34,8 +35,9 @@ const App = () => {
   return (
     <div className={classes.wrapper}>
       <ResponsiveAppBar />
-      <VideoPlayer />
       <Notifications />
+      <VideoPlayer />
+      <VehicleState/>
     </div>
   );
 };
