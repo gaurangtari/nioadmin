@@ -1,7 +1,9 @@
 import React, { createContext, useState, useRef, useEffect } from "react";
 import { io } from "socket.io-client";
 import Peer from "simple-peer";
-import axios from "axios";
+import { ref, get, set, onValue, off } from "firebase/database";
+import { rtdb } from "./firebase";
+
 import * as process from "process";
 window.global = window;
 window.process = process;
@@ -9,11 +11,11 @@ window.Buffer = [];
 
 const SocketContext = createContext();
 //URLs
-
-const SERVER = "http://localhost:9090";
+const SERVER = "https://rovsite.pagekite.me/";
 
 //SOCKET INITIALISATION
 const socket = io(SERVER);
+console.log(socket);
 
 const ContextProvider = ({ children }) => {
   const [callAccepted, setCallAccepted] = useState(false);
@@ -22,26 +24,15 @@ const ContextProvider = ({ children }) => {
   const [name, setName] = useState("");
   const [call, setCall] = useState({});
   const [me, setMe] = useState("");
-  const [joinedPeers, setJoinedPeers] = useState([]);
   const [vehicleState, setVehicleState] = useState({});
-  const effectOneHasRun = useRef(false);
+  const adminIdRef = ref(rtdb, "admin-id");
+  const adminHeartbeatRef = ref(rtdb, "heartbeat/admin");
 
   const myVideo = useRef();
   const userVideo = useRef();
   const connectionRef = useRef();
 
-  const sendAdminIdToRedis = async (id) => {
-    try {
-      await axios.post(`${SERVER}/admin-id`, { id });
-    } catch (error) {
-      console.log(error);
-      console.error("Error sending data to Redis:", error);
-    }
-  };
-
   useEffect(() => {
-    // if (effectOneHasRun.current) return;
-
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((currentStream) => {
@@ -51,22 +42,22 @@ const ContextProvider = ({ children }) => {
 
     socket.on("me", (id) => {
       socket.emit("join-room", id, id);
+      set(adminIdRef, id);
       setMe(id);
-      sendAdminIdToRedis(id);
     });
 
     socket.on("callUser", ({ from, name: callerName, signal }) => {
       setCall({ isReceivingCall: true, from, name: callerName, signal });
-      console.log("im running here");
+      console.log("signal from the client", signal);
     });
-    // effectOneHasRun.current = true;
   }, []);
 
+  //heartbeat
   useEffect(() => {
-    console.log("second effect");
-    socket.on("vehicle-state", (data) => {
-      setVehicleState(data);
-    });
+    setInterval(() => {
+      const heartbeat = Date.now();
+      set(adminHeartbeatRef, { heartbeat: heartbeat });
+    }, 3000);
   }, []);
 
   useEffect(() => {
@@ -84,22 +75,25 @@ const ContextProvider = ({ children }) => {
     setCallAccepted(true);
     setCall({ isReceivingCall: false });
 
-    const peer = new Peer({ initiator: false, trickle: false, stream });
-    console.log(stream);
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream,
+    });
 
     peer.on("signal", (data) => {
       socket.emit("answerCall", { signal: data, to: call.from });
     });
-    setJoinedPeers([...joinedPeers, call.name]);
-    peer.on("stream", (currentStream) => {
-      // userVideo.current.srcObject = currentStream;
-    });
+
+    peer.on("stream", (currentStream) => {});
 
     peer.signal(call.signal);
 
     connectionRef.current = peer;
-    console.log(joinedPeers);
   };
+  socket.on("hungup", (data) => {
+    connectionRef.current.destroy();
+  });
 
   const callUser = (id) => {
     const peer = new Peer({ initiator: true, trickle: false, stream });
@@ -117,10 +111,9 @@ const ContextProvider = ({ children }) => {
       userVideo.current.srcObject = currentStream;
     });
 
-    socket.on("callAccepted", (signal, id) => {
+    socket.on("callAccepted", (signal) => {
       setCallAccepted(true);
       peer.signal(signal);
-      console.log(id);
     });
 
     connectionRef.current = peer;

@@ -37,7 +37,7 @@ const App = () => {
       <ResponsiveAppBar />
       <Notifications />
       <VideoPlayer />
-      <VehicleState/>
+      <VehicleState />
     </div>
   );
 };
