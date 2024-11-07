@@ -52,13 +52,13 @@ const ContextProvider = ({ children }) => {
     });
   }, []);
 
-  //heartbeat
-  // useEffect(() => {
-  //   setInterval(() => {
-  //     const heartbeat = Date.now();
-  //     set(adminHeartbeatRef, { heartbeat: heartbeat });
-  //   }, 3000);
-  // }, []);
+  // heartbeat;
+  useEffect(() => {
+    setInterval(() => {
+      const heartbeat = Date.now();
+      set(adminHeartbeatRef, { heartbeat: heartbeat });
+    }, 3000);
+  }, []);
 
   useEffect(() => {
     const unloadCallback = (event) => {
